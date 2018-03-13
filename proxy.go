@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"sync/atomic"
+	"strings"
 )
 
 // The basic proxy type. Implements http.Handler.
@@ -50,6 +51,18 @@ func isEof(r *bufio.Reader) bool {
 	return false
 }
 
+func filterQueryString(s string) string {
+
+        pos := strings.Index(s, "?")
+
+        if( pos == -1 ) {
+                return s
+        } else {
+                return s[0:pos]
+        }
+}
+
+
 func (proxy *ProxyHttpServer) filterRequest(r *http.Request, ctx *ProxyCtx) (req *http.Request, resp *http.Response) {
 	req = r
 	for _, h := range proxy.reqHandlers {
@@ -73,7 +86,7 @@ func (proxy *ProxyHttpServer) filterResponse(respOrig *http.Response, ctx *Proxy
 
 func removeProxyHeaders(ctx *ProxyCtx, r *http.Request) {
 	r.RequestURI = "" // this must be reset when serving a request with the client
-	ctx.Logf("Sending request %v %v", r.Method, r.URL.String())
+	ctx.Logf("Sending request %v %v", r.Method, filterQueryString(r.URL.String()))
 	// If no Accept-Encoding header exists, Transport will add the headers it can accept
 	// and would wrap the response body with the relevant reader.
 	r.Header.Del("Accept-Encoding")
