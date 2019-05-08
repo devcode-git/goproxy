@@ -21,6 +21,7 @@ type ProxyCtx struct {
 	// Will connect a request to a response
 	Session int64
 	proxy   *ProxyHttpServer
+	Tr      *http.Transport
 }
 
 type RoundTripper interface {
@@ -34,8 +35,8 @@ func (f RoundTripperFunc) RoundTrip(req *http.Request, ctx *ProxyCtx) (*http.Res
 }
 
 func (ctx *ProxyCtx) RoundTrip(req *http.Request) (*http.Response, error) {
-	if ctx.RoundTripper != nil {
-		return ctx.RoundTripper.RoundTrip(req, ctx)
+	if ctx.Tr != nil {
+		return ctx.Tr.RoundTrip(req)
 	}
 	return ctx.proxy.Tr.RoundTrip(req)
 }
